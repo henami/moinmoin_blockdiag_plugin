@@ -5,7 +5,7 @@
 
     @license: GNU GPL, see COPYING for details.
 """
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import re
 #from pprint import pprint,pformat
@@ -32,7 +32,16 @@ class Parser:
             self.request.write('%s is invalid diag type or not implemented yet.' % module_name )
             self.request.write(formatter.preformatted(0))
             return
-        tree = self.module.parser.parse_string(text)
+        try:
+            tree = self.module.parser.parse_string(text)
+        except Exception as e:
+            self.request.write(formatter.preformatted(1))
+            self.request.write("Error:" + formatter.sysmsg(1))
+            self.request.write(" type: ParseException" )
+            self.request.write(" message: %s" % e.message)
+            self.request.write(formatter.sysmsg(0))
+            self.request.write(formatter.preformatted(0))
+            return
         outfile = None
         diagram = self.module.builder.ScreenNodeBuilder.build(tree)
         DiagramDraw = self.module.drawer.DiagramDraw        
@@ -137,3 +146,4 @@ class Parser:
                 self.module = None
 
         return diag_type
+

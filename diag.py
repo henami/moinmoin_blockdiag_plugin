@@ -5,7 +5,7 @@
 
     @license: GNU GPL, see COPYING for details.
 """
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 import re
 #from pprint import pprint,pformat
@@ -42,20 +42,30 @@ class Parser:
             self.request.write(formatter.sysmsg(0))
             self.request.write(formatter.preformatted(0))
             return
-        outfile = None
-        diagram = self.module.builder.ScreenNodeBuilder.build(tree)
-        DiagramDraw = self.module.drawer.DiagramDraw        
-        draw = DiagramDraw('SVG', diagram, outfile, antialias=True, nodoctype=True)
-        draw.draw()
-        xy = draw.pagesize()
-        svg = draw.save(None)
-        if width is None:
-            width = xy[0]
-        if height is None:
-            height = xy[1]
-        #self.request.write(formatter.preformatted(1))
-        self.request.write(self.svg_to_svg_fragment(svg, width, height))
-        #self.request.write(formatter.preformatted(0))
+        try:
+            outfile = None
+            diagram = self.module.builder.ScreenNodeBuilder.build(tree)
+            DiagramDraw = self.module.drawer.DiagramDraw        
+            draw = DiagramDraw('SVG', diagram, outfile, antialias=True, nodoctype=True)
+            draw.draw()
+            xy = draw.pagesize()
+            svg = draw.save(None)
+            if width is None:
+                width = xy[0]
+            if height is None:
+                height = xy[1]
+            #self.request.write(formatter.preformatted(1))
+            self.request.write(self.svg_to_svg_fragment(svg, width, height))
+            #self.request.write(formatter.preformatted(0))
+            return
+        except Exception as e:
+            self.request.write(formatter.preformatted(1))
+            self.request.write("Error:" + formatter.sysmsg(1))
+            self.request.write(" type: OtherException" )
+            self.request.write(" message: %s" % e.message)
+            self.request.write(formatter.sysmsg(0))
+            self.request.write(formatter.preformatted(0))
+            return
 
     def svg_to_svg_fragment(self, svg, width, height):
         params = [(u"<\?xml.*\?>\n", u"",),
